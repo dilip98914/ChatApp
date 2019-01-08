@@ -4,33 +4,39 @@ var io=module.exports.io=require('socket.io')(app);
 const PORT=process.env.PORT || 3231;
 users=[]
 connections=[]
+userMessages=[]
 
 
 io.on('connection',function(socket){
 	//handle connection
-	connections.push(socket);
-	console.log('connected: %s sockets connected',connections.length);
 
 	//handle disconnect
 	socket.on('disconnect',(data)=>{
-		connections.splice(connections.indexOf(socket),1);
 		console.log('Disconnected: %s sockets connected',connections.length);
 	});
 
-	//handle send object
-	socket.on('send object',(data)=>{
-		console.log(data);
-		const sample={
-			username:data.username,
-			message:data.message
-		};
-		users.push(sample);
-		socket.emit('get-users',{
-			users:users
+	//set username
+	socket.on('send-username',(object)=>{
+		connections.push(socket);
+		users.push({
+			username:object.username,
+			socketId:object.id
 		});
-	});
 
-	//handle get users
+		socket.on('send-message',(messageObj)=>{
+			userMessages.push({
+				id:socket.id,
+				username:object.username,
+				message:messageObj.message
+			});
+			console.log(userMessages);
+			socket.emit('get-chat',{userMessages});
+		});
+		// socket.emit('get-users',{
+		// 	users:users
+		// });
+
+	});
 	
 
 });
