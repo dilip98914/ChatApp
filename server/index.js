@@ -9,10 +9,12 @@ userMessages=[]
 
 io.on('connection',function(socket){
 	//handle connection
-
+	connections.push(socket);
 	//handle disconnect
 	socket.on('disconnect',(data)=>{
+		connections.splice(connections.indexOf(socket),1);
 		console.log('Disconnected: %s sockets connected',connections.length);
+
 	});
 
 	//set username
@@ -22,6 +24,7 @@ io.on('connection',function(socket){
 			username:object.username,
 			socketId:object.id
 		});
+		socket.emit('get-chat',{userMessages});
 
 		socket.on('send-message',(messageObj)=>{
 			userMessages.push({
